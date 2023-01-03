@@ -18,7 +18,8 @@ public class UserFeatureService {
     private final UserFeatureRepository userFeatureRepository;
     private final FeatureRepository featureRepository;
 
-    public Set<Feature> getAllUserFeature(Long userId) {
+    public Set<Feature> getAllUserFeature(Long userId) throws Exception {
+        if (userId == null) throw new Exception("Bad request! UserId is null");
         List<UserFeature> userFeatures = userFeatureRepository.getUserFeatureByUserId(userId);
         List<Feature> globalEnabledFeatures = featureRepository.getFeaturesByGlobalEnabled(true);
         Set<Feature> allEnabledForUser = new HashSet<>();

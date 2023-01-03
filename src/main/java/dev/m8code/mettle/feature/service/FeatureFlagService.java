@@ -20,8 +20,11 @@ public class FeatureFlagService {
 
 
     public void changeFeatureFlagForUser(Long featureId, Long userId, boolean isEnable) throws Exception {
-        Feature feature = featureRepository.getReferenceById(featureId);
-        User user = userRepository.getReferenceById(userId);
+        validateEntryData(featureId, userId);
+        Feature feature = featureRepository.findById(featureId)
+                .orElseThrow(() -> new Exception("Feature not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found"));
         UserFeature userFeature = userFeatureRepository.getUserFeatureByUserIdAndFeatureId(userId, featureId);
         changeUserFeature(isEnable, feature, user, userFeature);
     }
@@ -35,11 +38,21 @@ public class FeatureFlagService {
         }
 
         if (userFeature != null && isEnable) {
-            throw new Exception("Bad request!");
+            throw new Exception("Bad request! Feature is active for user");
         }
 
-        if (userFeature != null && !isEnable) {
+        if (userFeature != null) {
             userFeatureRepository.delete(userFeature);
+            log.info("Feature [{}] deactivated for user [{}]", userFeature, user);
+        }
+    }
+
+    private void validateEntryData(Long featureId, Long userId) throws Exception {
+        if (featureId == null) {
+            throw new Exception("Bad request! FeatureId is null.");
+        }
+        if (userId == null) {
+            throw new Exception("Bad request! UserId is null.");
         }
     }
 }
